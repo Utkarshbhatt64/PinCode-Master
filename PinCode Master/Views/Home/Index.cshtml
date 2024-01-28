@@ -1,0 +1,259 @@
+﻿@model List<PinCode_Master.Models.Product>
+
+@{
+    ViewBag.Title = "Pincode Master";
+    var isEditMode = ViewBag.IsEditMode ?? false;
+    var buttonText = isEditMode ? "Update" : "Save";
+    var formAction = isEditMode ? "UpdateProduct" : "SaveProduct";
+    var formId = isEditMode ? "editForm" : "createForm";
+}
+@*<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>*@
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.2/xlsx.full.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.7.1/js/dataTables.buttons.min.js"></script>
+<link href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css" rel="stylesheet">
+
+<script src="https://cdn.datatables.net/responsive/2.1.0/js/dataTables.responsive.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<style>
+
+    .excel-link {
+        display: inline-block;
+        padding: 10px 10px;
+        background-color: #087ccd;
+        color: #fff;
+        text-decoration: none;
+        border: none;
+        border-radius: 2px;
+        cursor: pointer;
+    }
+
+        .excel-link:hover {
+            background-color: #087ccd;
+            color: #fff;
+        }
+
+    .dataTables_wrapper .dataTables_filter input, .dataTables_wrapper .dataTables_length select {
+        background-color: #fff;
+    }
+
+    .row.m-0 {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    h2 {
+        text-align: center;
+    }
+
+    table#prepTable th, td {
+        /*display:block;*/
+    }
+</style>
+<h2>Pincode Master</h2>
+
+@using (Html.BeginForm("SaveProduct", "Home", FormMethod.Post, new { @class = "form-horizontal", id = formId }))
+
+{
+    @Html.AntiForgeryToken()
+
+    if (isEditMode)
+    {
+        @Html.HiddenFor(model => model.FirstOrDefault().ID)
+    }
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.FirstOrDefault().Pincode, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.FirstOrDefault().Pincode, new { htmlAttributes = new { @class = "form-control", @id = "pincode" } })
+            @Html.ValidationMessageFor(model => model.FirstOrDefault().Pincode, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.FirstOrDefault().City, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.FirstOrDefault().City, new { htmlAttributes = new { @class = "form-control", @id = "City" } })
+            @Html.ValidationMessageFor(model => model.FirstOrDefault().City, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.FirstOrDefault().State, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.FirstOrDefault().State, new { htmlAttributes = new { @class = "form-control", @id = "state" } })
+            @Html.ValidationMessageFor(model => model.FirstOrDefault().State, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.FirstOrDefault().Country, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.FirstOrDefault().Country, new { htmlAttributes = new { @class = "form-control", @id = "country" } })
+            @Html.ValidationMessageFor(model => model.FirstOrDefault().Country, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.FirstOrDefault().Active, htmlAttributes: new { @class = "control-label col-md-2", @id = "active" })
+        <div class="col-md-10">
+            <div class="checkbox">
+                <label>
+                    @Html.CheckBoxFor(model => model.FirstOrDefault().Active) Active
+                </label>
+            </div>
+        </div>
+    </div>
+
+
+    @*<div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="@buttonText" class="btn btn-success" onclick="clearForm()" />
+                <input type="reset" value="Reset" class="btn btn-default" />
+            </div>
+        </div>*@
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="Save" class="btn btn-success" />
+            <!-- Add this button inside your form -->
+            <input type="button" value="Clear Form" class="btn btn-warning" onclick="clearForm()" />
+
+            <a href="javascript:void(0);" onclick="exportToExcel()" class="excel-link">Export to Excel</a>
+
+        </div>
+    </div>
+
+}
+<!-- Display a table for existing products -->
+<table id="Table" class="table table-bordered table-hover table-striped">
+    <tr>
+        <th>
+            Pincode
+        </th>
+        <th>
+            City
+        </th>
+        <th>
+            State
+        </th>
+        <th>
+            Country
+        </th>
+        <th>
+            Active
+        </th>
+        <th>Action</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Pincode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.City)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.State)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Country)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Active)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.ID }, new { @class = "btn btn-primary edit-button" }) &nbsp;&nbsp;&nbsp;
+                @Html.ActionLink("Delete", "Delete", new { id = item.ID }, new { @class = "btn btn-danger" })
+            </td>
+        </tr>
+    }
+</table>
+
+<!-- Form for creating or editing a product -->
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    @*<script>
+
+            $(".edit-button").click(function () {
+                var productId = $(this).closest("tr").find("td:first").text();
+                var productName = $(this).closest("tr").find("td:eq(1)").text();
+                var price = $(this).closest("tr").find("td:eq(2)").text();
+                var qty = $(this).closest("tr").find("td:eq(3)").text();
+                var remarks = $(this).closest("tr").find("td:eq(4)").text();
+
+                $("#editForm #editProductId").val(productId);
+                $("#editForm #editProductName").val(productName);
+                $("#editForm #editPrice").val(price);
+                $("#editForm #editQty").val(qty);
+                $("#editForm #editRemarks").val(remarks);
+
+                $("#createForm").hide();
+                $("#editForm").show();
+
+                return false; // Prevent the default ActionLink behavior
+            });
+        </script>*@
+    <script>
+        // Function to clear form fields
+        function clearForm() {
+            $('#pincode').val('');
+            $('#City').val('');
+            $('#state').val('');
+            $('#country').val('');
+            $('#active').prop('checked', false);
+
+        }
+    </script>
+    <script>
+        function exportToExcel(data) {
+            var ws = XLSX.utils.json_to_sheet(data);
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Products');
+            var wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'blob' });
+
+            saveAs(new Blob([wbout], { type: 'application/octet-stream' }), 'Products.xlsx');
+        }
+
+        // Assuming you have a button to trigger the export
+        document.getElementById('exportBtn').addEventListener('click', function () {
+            // Make an AJAX request to get the data
+            $.ajax({
+                url: '/Home/ExportToExcel',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    exportToExcel(data);
+                },
+                error: function (error) {
+                    console.error('Error fetching data:', error);
+                }
+            });
+        });
+
+
+    </script>
+
+    <script>
+
+        function exportToExcel() {
+            // Get the table
+            var table = document.getElementById("Table");
+
+            // Create a new workbook
+            var wb = XLSX.utils.book_new();
+            var ws = XLSX.utils.table_to_sheet(table);
+
+            // Add the worksheet to the workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Pincode");
+
+            // Save the workbook to a file
+            XLSX.writeFile(wb, "Pincode.xlsx");
+        }
+
+    </script>
+}
