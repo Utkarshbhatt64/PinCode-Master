@@ -13,7 +13,7 @@ namespace PinCode_Master.DAL
     {
         string conString = ConfigurationManager.ConnectionStrings["adoConnectionstring"].ToString();
 
-        //Get All Products
+        //Get All Productssss
         public List<Product> GetAllProducts()
         {
             List<Product> productList = new List<Product>();
